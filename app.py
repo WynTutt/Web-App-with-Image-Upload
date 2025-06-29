@@ -9,10 +9,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-#@app.before_request
-#def limit_remote_addr():
-#    if request.remote_addr != ALLOWED_IP:
-#        abort(403)
+@app.before_request
+def limit_remote_addr():
+    if request.remote_addr != ALLOWED_IP:
+        abort(403)
 
 # Helper function to validate and sanitize filenames
 def is_safe_path(base_path, user_input):
