@@ -1,4 +1,6 @@
 venv/
 __pycache__/
 *.pyc
-static/uploads/
+# Ignore uploads, but allow preloaded demo files
+!static/uploads/test.png
+static/uploads/*

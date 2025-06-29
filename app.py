@@ -14,6 +14,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 #    if request.remote_addr != ALLOWED_IP:
 #        abort(403)
 
+# Helper function to validate and sanitize filenames
+def is_safe_path(base_path, user_input):
+    # Normalize the full path and check it stays inside the allowed directory
+    target_path = os.path.abspath(os.path.join(base_path, user_input))
+    return target_path.startswith(os.path.abspath(base_path))
+
 @app.route('/')
 def index():
     images = os.listdir(UPLOAD_FOLDER)
@@ -23,11 +29,17 @@ def index():
 def upload():
     file = request.files['image']
     if file and file.filename.lower().endswith(('png', 'jpg', 'jpeg', 'gif')):
-        file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+        filename = file.filename
+        if not is_safe_path(UPLOAD_FOLDER, filename):
+            abort(400, "Invalid filename.")
+        save_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(save_path)
     return redirect(url_for('index'))
 
 @app.route('/delete/<filename>', methods=['POST'])
 def delete(filename):
+    if not is_safe_path(UPLOAD_FOLDER, filename):
+        abort(400, "Invalid filename.")
     path = os.path.join(UPLOAD_FOLDER, filename)
     if os.path.exists(path):
         os.remove(path)
@@ -35,6 +47,8 @@ def delete(filename):
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    if not is_safe_path(UPLOAD_FOLDER, filename):
+        abort(400, "Invalid filename.")
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 if __name__ == '__main__':
